@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:todo/data.dart';
 
+const taskBoxName = 'tasks';
 void main() async {
   await Hive.initFlutter();
+  Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(PriorityAdapter());
+  await Hive.openBox<Task>(taskBoxName);
   runApp(const MyApp());
 }
 
@@ -17,54 +22,71 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Widget build(BuildContext context) {
+    final box = Hive.box<Task>(taskBoxName);
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => EditTaskScreen(),
+            ));
+          },
+          label: const Text('Add New Task')),
+      appBar: AppBar(title: const Text('To Do List')),
+      body: ListView.builder(
+          itemCount: box.values.length,
+          itemBuilder: (context, index) {
+            final task = box.values.toList()[index];
+            return Container(
+              child: Text(task.name),
+            );
+          }),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class EditTaskScreen extends StatelessWidget {
+  final TextEditingController _controller = TextEditingController();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  EditTaskScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            final task = Task();
+            task.name = _controller.text;
+            task.priority = Priority.low;
+            if (task.isInBox) {
+              task.save();
+            } else {
+              final Box<Task> box = Hive.box(taskBoxName);
+              box.add(task);
+            }
+
+            Navigator.of(context).pop();
+          },
+          label: const Text('Save')),
+      appBar: AppBar(title: const Text('Edit Task')),
+      body: Column(
+        children: [
+          TextField(
+            controller: _controller,
+            decoration:
+                const InputDecoration(label: Text('Add a task for today...')),
+          )
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
