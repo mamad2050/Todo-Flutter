@@ -17,6 +17,7 @@ void main() async {
 
 const primaryColor = Color(0xff794CFF);
 const primaryContainerColor = Color(0xff5C0AFF);
+const secondaryTextColor = Color(0xffAFBED0);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -25,10 +26,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryTextColor = Color(0xff1D2830);
-    const secondaryTextColor = Color(0xffAFBED0);
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
+          fontFamily: 'PrimaryFont',
           inputDecorationTheme: const InputDecorationTheme(
             border: InputBorder.none,
             labelStyle: TextStyle(color: secondaryTextColor),
@@ -83,8 +84,9 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'To Do List',
-                          style: themeData.textTheme.titleLarge!
-                              .apply(color: themeData.colorScheme.onPrimary),
+                          style: themeData.textTheme.titleLarge!.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: themeData.colorScheme.onPrimary),
                         ),
                         Icon(
                           CupertinoIcons.share,
@@ -118,12 +120,52 @@ class HomeScreen extends StatelessWidget {
                 valueListenable: box.listenable(),
                 builder: (context, value, child) {
                   return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                       itemCount: box.values.length,
                       itemBuilder: (context, index) {
-                        final task = box.values.toList()[index];
-                        return Container(
-                          child: Text(task.name),
-                        );
+                        if (index == 0) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Today',
+                                      style: themeData.textTheme.titleLarge!
+                                          .copyWith(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    width: 60,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius:
+                                            BorderRadius.circular(1.5)),
+                                  )
+                                ],
+                              ),
+                              MaterialButton(
+                                elevation: 0,
+                                textColor: secondaryTextColor,
+                                color: const Color(0xffEAEFF5),
+                                onPressed: () {},
+                                child: const Row(
+                                  children: [
+                                    Text('Delete All'),
+                                    SizedBox(width: 4),
+                                    Icon(CupertinoIcons.delete_solid, size: 18),
+                                  ],
+                                ),
+                              )
+                            ],
+                          );
+                        } else {
+                          final taskData = box.values.toList()[index];
+                          return TaskItem(task: taskData);
+                        }
                       });
                 },
               ),
@@ -131,6 +173,87 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class TaskItem extends StatefulWidget {
+  const TaskItem({
+    super.key,
+    required this.task,
+  });
+
+  final Task task;
+
+  @override
+  State<TaskItem> createState() => _TaskItemState();
+}
+
+class _TaskItemState extends State<TaskItem> {
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+    return InkWell(
+      onTap: (() {
+        setState(() {
+          widget.task.isCompleted = !widget.task.isCompleted;
+        });
+      }),
+      child: Container(
+        margin: EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(right: 16, left: 16),
+        height: 84,
+        decoration: BoxDecoration(
+          color: themeData.colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            CustomCheckBox(value: widget.task.isCompleted),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                widget.task.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: widget.task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CustomCheckBox extends StatelessWidget {
+  final bool value;
+
+  const CustomCheckBox({super.key, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: !value ? Border.all(width: 2, color: secondaryTextColor) : null,
+        color: value ? primaryColor : null,
+      ),
+      child: value
+          ? Icon(
+              CupertinoIcons.check_mark,
+              color: themeData.colorScheme.onPrimary,
+              size: 14,
+            )
+          : null,
     );
   }
 }
