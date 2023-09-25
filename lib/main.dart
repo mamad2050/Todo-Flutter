@@ -67,7 +67,9 @@ class HomeScreen extends StatelessWidget {
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => EditTaskScreen(),
+              builder: (context) => EditTaskScreen(
+                task: TaskData(),
+              ),
             ));
           },
           child: Row(
