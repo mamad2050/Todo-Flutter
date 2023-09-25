@@ -58,13 +58,52 @@ class HomeScreen extends StatelessWidget {
     final themeData = Theme.of(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
+      // floatingActionButton: FloatingActionButton.extended(
+      //     onPressed: () {
+      //       Navigator.of(context).push(MaterialPageRoute(
+      //         builder: (context) => EditTaskScreen(),
+      //       ));
+      //     },
+      //     label: const Text('Add New Task')),
+      floatingActionButton: Container(
+        width: 160,
+        height: 46,
+        decoration: BoxDecoration(
+            color: primaryColor, borderRadius: BorderRadius.circular(4)),
+        child: InkWell(
+          onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => EditTaskScreen(),
             ));
           },
-          label: const Text('Add New Task')),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Add New Task',
+                style: TextStyle(
+                  color: themeData.colorScheme.onPrimary,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: themeData.colorScheme.primaryContainer
+                        .withOpacity(0.3)),
+                child: Icon(
+                  CupertinoIcons.add,
+                  color: themeData.colorScheme.onPrimary,
+                  size: 16,
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -200,7 +239,7 @@ class _TaskItemState extends State<TaskItem> {
         });
       }),
       child: Container(
-        margin: EdgeInsets.only(top: 8),
+        margin: const EdgeInsets.only(top: 8),
         padding: const EdgeInsets.only(right: 16, left: 16),
         height: 84,
         decoration: BoxDecoration(
@@ -251,7 +290,7 @@ class CustomCheckBox extends StatelessWidget {
           ? Icon(
               CupertinoIcons.check_mark,
               color: themeData.colorScheme.onPrimary,
-              size: 14,
+              size: 12,
             )
           : null,
     );
