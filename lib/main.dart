@@ -212,6 +212,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class TaskItem extends StatefulWidget {
+  static const double height = 84;
+
   const TaskItem({
     super.key,
     required this.task,
@@ -227,6 +229,20 @@ class _TaskItemState extends State<TaskItem> {
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
+    final Color priorityColor;
+
+    print(widget.task.priority);
+    switch (widget.task.priority) {
+      case Priority.low:
+        priorityColor = Colors.cyan;
+        break;
+      case Priority.normal:
+        priorityColor = Colors.orange;
+        break;
+      case Priority.high:
+        priorityColor = Colors.red;
+        break;
+    }
     return InkWell(
       onTap: (() {
         setState(() {
@@ -235,8 +251,8 @@ class _TaskItemState extends State<TaskItem> {
       }),
       child: Container(
         margin: const EdgeInsets.only(top: 8),
-        padding: const EdgeInsets.only(right: 16, left: 16),
-        height: 84,
+        padding: const EdgeInsets.only(left: 16),
+        height: TaskItem.height,
         decoration: BoxDecoration(
           color: themeData.colorScheme.surface,
           borderRadius: BorderRadius.circular(8),
@@ -257,6 +273,16 @@ class _TaskItemState extends State<TaskItem> {
                         : null),
               ),
             ),
+            const SizedBox(width: 8),
+            Container(
+              width: 5,
+              height: TaskItem.height,
+              decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                      bottomRight: Radius.circular(8),
+                      topRight: Radius.circular(8)),
+                  color: priorityColor),
+            )
           ],
         ),
       ),

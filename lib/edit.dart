@@ -31,7 +31,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           onTap: () {
             final task = TaskData();
             task.name = _controller.text;
-            task.priority = Priority.low;
+            task.priority = widget.task.priority;
             if (task.isInBox) {
               task.save();
             } else {
@@ -121,8 +121,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             ),
             TextField(
               controller: _controller,
-              decoration:
-                  const InputDecoration(label: Text('Add a task for today...')),
+              decoration: InputDecoration(
+                label: Text('Add a task for today...',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge!
+                        .apply(fontSizeFactor: 1.3)),
+              ),
             ),
           ],
         ),
