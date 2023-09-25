@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:todo/data.dart';
+import 'package:todo/edit.dart';
 
 const taskBoxName = 'tasks';
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(PriorityAdapter());
-  await Hive.openBox<Task>(taskBoxName);
+  await Hive.openBox<TaskData>(taskBoxName);
   SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(statusBarColor: primaryContainerColor));
   runApp(const MyApp());
@@ -54,17 +55,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final box = Hive.box<Task>(taskBoxName);
+    final box = Hive.box<TaskData>(taskBoxName);
     final themeData = Theme.of(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // floatingActionButton: FloatingActionButton.extended(
-      //     onPressed: () {
-      //       Navigator.of(context).push(MaterialPageRoute(
-      //         builder: (context) => EditTaskScreen(),
-      //       ));
-      //     },
-      //     label: const Text('Add New Task')),
       floatingActionButton: Container(
         width: 160,
         height: 46,
@@ -92,8 +86,7 @@ class HomeScreen extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: themeData.colorScheme.primaryContainer
-                        .withOpacity(0.3)),
+                    color: Colors.white.withOpacity(0.2)),
                 child: Icon(
                   CupertinoIcons.add,
                   color: themeData.colorScheme.onPrimary,
@@ -155,7 +148,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ValueListenableBuilder<Box<Task>>(
+              child: ValueListenableBuilder<Box<TaskData>>(
                 valueListenable: box.listenable(),
                 builder: (context, value, child) {
                   return ListView.builder(
@@ -222,7 +215,7 @@ class TaskItem extends StatefulWidget {
     required this.task,
   });
 
-  final Task task;
+  final TaskData task;
 
   @override
   State<TaskItem> createState() => _TaskItemState();
@@ -293,43 +286,6 @@ class CustomCheckBox extends StatelessWidget {
               size: 12,
             )
           : null,
-    );
-  }
-}
-
-class EditTaskScreen extends StatelessWidget {
-  final TextEditingController _controller = TextEditingController();
-
-  EditTaskScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            final task = Task();
-            task.name = _controller.text;
-            task.priority = Priority.low;
-            if (task.isInBox) {
-              task.save();
-            } else {
-              final Box<Task> box = Hive.box(taskBoxName);
-              box.add(task);
-            }
-
-            Navigator.of(context).pop();
-          },
-          label: const Text('Save')),
-      appBar: AppBar(title: const Text('Edit Task')),
-      body: Column(
-        children: [
-          TextField(
-            controller: _controller,
-            decoration:
-                const InputDecoration(label: Text('Add a task for today...')),
-          )
-        ],
-      ),
     );
   }
 }
