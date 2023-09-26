@@ -231,7 +231,6 @@ class _TaskItemState extends State<TaskItem> {
     final ThemeData themeData = Theme.of(context);
     final Color priorityColor;
 
-    print(widget.task.priority);
     switch (widget.task.priority) {
       case Priority.low:
         priorityColor = Colors.cyan;
@@ -245,9 +244,8 @@ class _TaskItemState extends State<TaskItem> {
     }
     return InkWell(
       onTap: (() {
-        setState(() {
-          widget.task.isCompleted = !widget.task.isCompleted;
-        });
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => EditTaskScreen(task: widget.task)));
       }),
       child: Container(
         margin: const EdgeInsets.only(top: 8),
@@ -259,7 +257,14 @@ class _TaskItemState extends State<TaskItem> {
         ),
         child: Row(
           children: [
-            CustomCheckBox(value: widget.task.isCompleted),
+            CustomCheckBox(
+              value: widget.task.isCompleted,
+              onTap: () {
+                setState(() {
+                  widget.task.isCompleted = !widget.task.isCompleted;
+                });
+              },
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -292,28 +297,32 @@ class _TaskItemState extends State<TaskItem> {
 
 class CustomCheckBox extends StatelessWidget {
   final bool value;
-
-  const CustomCheckBox({super.key, required this.value});
+  final GestureTapCallback onTap;
+  const CustomCheckBox({super.key, required this.value, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: !value ? Border.all(width: 2, color: secondaryTextColor) : null,
-        color: value ? primaryColor : null,
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border:
+              !value ? Border.all(width: 2, color: secondaryTextColor) : null,
+          color: value ? primaryColor : null,
+        ),
+        child: value
+            ? Icon(
+                CupertinoIcons.check_mark,
+                color: themeData.colorScheme.onPrimary,
+                size: 12,
+              )
+            : null,
       ),
-      child: value
-          ? Icon(
-              CupertinoIcons.check_mark,
-              color: themeData.colorScheme.onPrimary,
-              size: 12,
-            )
-          : null,
     );
   }
 }

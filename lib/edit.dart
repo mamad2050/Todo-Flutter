@@ -14,7 +14,8 @@ class EditTaskScreen extends StatefulWidget {
 }
 
 class _EditTaskScreenState extends State<EditTaskScreen> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.task.name);
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +30,13 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             color: primaryColor, borderRadius: BorderRadius.circular(4)),
         child: InkWell(
           onTap: () {
-            final task = TaskData();
-            task.name = _controller.text;
-            task.priority = widget.task.priority;
-            if (task.isInBox) {
-              task.save();
+            widget.task.name = _controller.text;
+            widget.task.priority = widget.task.priority;
+            if (widget.task.isInBox) {
+              widget.task.save();
             } else {
               final Box<TaskData> box = Hive.box(taskBoxName);
-              box.add(task);
+              box.add(widget.task);
             }
             Navigator.of(context).pop();
           },
