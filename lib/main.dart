@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:todo/data.dart';
 import 'package:todo/edit.dart';
@@ -155,10 +156,12 @@ class HomeScreen extends StatelessWidget {
               child: ValueListenableBuilder<Box<TaskData>>(
                 valueListenable: box.listenable(),
                 builder: (context, value, child) {
-                  if (box.isNotEmpty) {
+                  if (value.isEmpty) {
+                    return const EmptyState();
+                  } else {
                     return ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                        itemCount: box.values.length,
+                        itemCount: box.values.length + 1,
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             return Row(
@@ -203,12 +206,10 @@ class HomeScreen extends StatelessWidget {
                               ],
                             );
                           } else {
-                            final taskData = box.values.toList()[index];
+                            final taskData = box.values.toList()[index - 1];
                             return TaskItem(task: taskData);
                           }
                         });
-                  } else {
-                    return EmptyState();
                   }
                 },
               ),
@@ -332,6 +333,25 @@ class CustomCheckBox extends StatelessWidget {
               )
             : null,
       ),
+    );
+  }
+}
+
+class EmptyState extends StatelessWidget {
+  const EmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SvgPicture.asset(
+          'assets/empty_state.svg',
+          width: 120,
+        ),
+        const SizedBox(height: 12),
+        const Text('Your task list is empty!')
+      ],
     );
   }
 }
