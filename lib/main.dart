@@ -257,6 +257,9 @@ class _TaskItemState extends State<TaskItem> {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => EditTaskScreen(task: widget.task)));
       }),
+      onLongPress: () {
+        widget.task.delete();
+      },
       child: Container(
         margin: const EdgeInsets.only(top: 8),
         padding: const EdgeInsets.only(left: 16),
