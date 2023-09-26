@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:todo/data.dart';
 import 'package:todo/edit.dart';
+import 'package:todo/empty_state.dart';
 
 const taskBoxName = 'tasks';
 void main() async {
@@ -11,8 +12,9 @@ void main() async {
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(PriorityAdapter());
   await Hive.openBox<TaskData>(taskBoxName);
-  SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(statusBarColor: primaryContainerColor));
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarIconBrightness: Brightness.light,
+      statusBarColor: primaryContainerColor));
   runApp(const MyApp());
 }
 
@@ -153,54 +155,61 @@ class HomeScreen extends StatelessWidget {
               child: ValueListenableBuilder<Box<TaskData>>(
                 valueListenable: box.listenable(),
                 builder: (context, value, child) {
-                  return ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                      itemCount: box.values.length,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Today',
-                                      style: themeData.textTheme.titleLarge!
-                                          .copyWith(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      )),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    width: 60,
-                                    height: 4,
-                                    decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius:
-                                            BorderRadius.circular(1.5)),
-                                  )
-                                ],
-                              ),
-                              MaterialButton(
-                                elevation: 0,
-                                textColor: secondaryTextColor,
-                                color: const Color(0xffEAEFF5),
-                                onPressed: () {},
-                                child: const Row(
+                  if (box.isNotEmpty) {
+                    return ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                        itemCount: box.values.length,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Delete All'),
-                                    SizedBox(width: 4),
-                                    Icon(CupertinoIcons.delete_solid, size: 18),
+                                    Text('Today',
+                                        style: themeData.textTheme.titleLarge!
+                                            .copyWith(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      width: 60,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius:
+                                              BorderRadius.circular(1.5)),
+                                    )
                                   ],
                                 ),
-                              )
-                            ],
-                          );
-                        } else {
-                          final taskData = box.values.toList()[index];
-                          return TaskItem(task: taskData);
-                        }
-                      });
+                                MaterialButton(
+                                  elevation: 0,
+                                  textColor: secondaryTextColor,
+                                  color: const Color(0xffEAEFF5),
+                                  onPressed: () {
+                                    box.clear();
+                                  },
+                                  child: const Row(
+                                    children: [
+                                      Text('Delete All'),
+                                      SizedBox(width: 4),
+                                      Icon(CupertinoIcons.delete_solid,
+                                          size: 18),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            );
+                          } else {
+                            final taskData = box.values.toList()[index];
+                            return TaskItem(task: taskData);
+                          }
+                        });
+                  } else {
+                    return EmptyState();
+                  }
                 },
               ),
             ),
@@ -212,7 +221,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class TaskItem extends StatefulWidget {
-  static const double height = 84;
+  static const double height = 74;
 
   const TaskItem({
     super.key,
@@ -272,7 +281,7 @@ class _TaskItemState extends State<TaskItem> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     decoration: widget.task.isCompleted
                         ? TextDecoration.lineThrough
                         : null),
