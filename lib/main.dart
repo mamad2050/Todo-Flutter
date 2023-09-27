@@ -48,13 +48,20 @@ class MyApp extends StatelessWidget {
               onPrimary: Colors.white,
               secondary: primaryColor,
               onSecondary: Colors.white)),
-      home: const HomeScreen(),
+      home: HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -143,8 +150,13 @@ class HomeScreen extends StatelessWidget {
                                 color: Colors.black.withOpacity(0.1),
                                 blurRadius: 20)
                           ]),
-                      child: const TextField(
-                          decoration: InputDecoration(
+                      child: TextField(
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          controller: controller,
+                          decoration: const InputDecoration(
+                              floatingLabelBehavior: FloatingLabelBehavior.auto,
                               prefixIcon: Icon(CupertinoIcons.search),
                               label: Text('Search tasks...'))),
                     )
@@ -155,13 +167,19 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: ValueListenableBuilder<Box<TaskData>>(
                 valueListenable: box.listenable(),
-                builder: (context, value, child) {
-                  if (value.isEmpty) {
-                    return const EmptyState();
+                builder: (context, box, child) {
+                  final items;
+                  if (controller.text.isEmpty) {
+                    items = box.values.toList();
                   } else {
+                    items = box.values
+                        .where((task) => task.name.contains(controller.text))
+                        .toList();
+                  }
+                  if (items.isNotEmpty) {
                     return ListView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                        itemCount: box.values.length + 1,
+                        itemCount: items.length + 1,
                         itemBuilder: (context, index) {
                           if (index == 0) {
                             return Row(
@@ -206,10 +224,12 @@ class HomeScreen extends StatelessWidget {
                               ],
                             );
                           } else {
-                            final taskData = box.values.toList()[index - 1];
+                            final taskData = items[index - 1];
                             return TaskItem(task: taskData);
                           }
                         });
+                  } else {
+                    return const EmptyState();
                   }
                 },
               ),
