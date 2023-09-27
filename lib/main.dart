@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:todo/data.dart';
 import 'package:todo/edit.dart';
-import 'package:todo/empty_state.dart';
 
 const taskBoxName = 'tasks';
 void main() async {
@@ -53,15 +52,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController controller = TextEditingController();
+  final ValueNotifier<String> searchKeywordNotifier = ValueNotifier('');
 
   @override
   Widget build(BuildContext context) {
@@ -152,11 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ]),
                       child: TextField(
                           onChanged: (value) {
-                            setState(() {});
+                            searchKeywordNotifier.value = controller.text;
                           },
                           controller: controller,
                           decoration: const InputDecoration(
-                              floatingLabelBehavior: FloatingLabelBehavior.auto,
                               prefixIcon: Icon(CupertinoIcons.search),
                               label: Text('Search tasks...'))),
                     )
@@ -165,72 +158,81 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: ValueListenableBuilder<Box<TaskData>>(
-                valueListenable: box.listenable(),
-                builder: (context, box, child) {
-                  final items;
-                  if (controller.text.isEmpty) {
-                    items = box.values.toList();
-                  } else {
-                    items = box.values
-                        .where((task) => task.name.contains(controller.text))
-                        .toList();
-                  }
-                  if (items.isNotEmpty) {
-                    return ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                        itemCount: items.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == 0) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+              child: ValueListenableBuilder<String>(
+                valueListenable: searchKeywordNotifier,
+                builder: (context, value, child) {
+                  return ValueListenableBuilder<Box<TaskData>>(
+                    valueListenable: box.listenable(),
+                    builder: (context, box, child) {
+                      final items;
+                      if (controller.text.isEmpty) {
+                        items = box.values.toList();
+                      } else {
+                        items = box.values
+                            .where(
+                                (task) => task.name.contains(controller.text))
+                            .toList();
+                      }
+                      if (items.isNotEmpty) {
+                        return ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                            itemCount: items.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Today',
-                                        style: themeData.textTheme.titleLarge!
-                                            .copyWith(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        )),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      width: 60,
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(1.5)),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Today',
+                                            style: themeData
+                                                .textTheme.titleLarge!
+                                                .copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
+                                            )),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          width: 60,
+                                          height: 4,
+                                          decoration: BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(1.5)),
+                                        )
+                                      ],
+                                    ),
+                                    MaterialButton(
+                                      elevation: 0,
+                                      textColor: secondaryTextColor,
+                                      color: const Color(0xffEAEFF5),
+                                      onPressed: () {
+                                        box.clear();
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Text('Delete All'),
+                                          SizedBox(width: 4),
+                                          Icon(CupertinoIcons.delete_solid,
+                                              size: 18),
+                                        ],
+                                      ),
                                     )
                                   ],
-                                ),
-                                MaterialButton(
-                                  elevation: 0,
-                                  textColor: secondaryTextColor,
-                                  color: const Color(0xffEAEFF5),
-                                  onPressed: () {
-                                    box.clear();
-                                  },
-                                  child: const Row(
-                                    children: [
-                                      Text('Delete All'),
-                                      SizedBox(width: 4),
-                                      Icon(CupertinoIcons.delete_solid,
-                                          size: 18),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            );
-                          } else {
-                            final taskData = items[index - 1];
-                            return TaskItem(task: taskData);
-                          }
-                        });
-                  } else {
-                    return const EmptyState();
-                  }
+                                );
+                              } else {
+                                final taskData = items[index - 1];
+                                return TaskItem(task: taskData);
+                              }
+                            });
+                      } else {
+                        return const EmptyState();
+                      }
+                    },
+                  );
                 },
               ),
             ),
