@@ -1,1 +1,1 @@
-
+class Repository<T> {}
