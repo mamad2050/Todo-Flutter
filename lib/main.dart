@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/data/data.dart';
+import 'package:todo/data/repo/repository.dart';
+import 'package:todo/data/source/hive_task_source.dart';
 import 'package:todo/screens/home/home.dart';
 
-const taskBoxName = 'tasks';
+const boxName = 'tasks';
 void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(PriorityAdapter());
-  await Hive.openBox<TaskData>(taskBoxName);
+  await Hive.openBox<TaskData>(boxName);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarIconBrightness: Brightness.light,
       statusBarColor: primaryContainerColor));
-  runApp(const MyApp());
+
+  runApp(ChangeNotifierProvider<Repository<TaskData>>(
+      create: ((context) => Repository<TaskData>(
+          localDataSource: HiveTaskDataSource(box: Hive.box(boxName)))),
+      child: const MyApp()));
 }
 
 const primaryColor = Color(0xff794CFF);

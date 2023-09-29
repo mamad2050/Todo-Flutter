@@ -35,7 +35,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             if (widget.task.isInBox) {
               widget.task.save();
             } else {
-              final Box<TaskData> box = Hive.box(taskBoxName);
+              final Box<TaskData> box = Hive.box(boxName);
               box.add(widget.task);
             }
             Navigator.of(context).pop();
