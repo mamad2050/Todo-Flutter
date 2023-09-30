@@ -13,6 +13,7 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
       if (event is TaskListStarted || event is TaskListSearch) {
         final String searchKeyWord;
         emit(TaskListLoading());
+
         if (event is TaskListSearch) {
           searchKeyWord = event.searchKeyWord;
         } else {
