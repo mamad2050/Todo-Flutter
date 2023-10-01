@@ -101,16 +101,18 @@ class HomeScreen extends StatelessWidget {
                                   color: Colors.black.withOpacity(0.1),
                                   blurRadius: 20)
                             ]),
-                        child: TextField(
-                            onChanged: (value) {
-                              context
-                                  .read<TaskListBloc>()
-                                  .add(TaskListSearch(value));
-                            },
-                            controller: controller,
-                            decoration: const InputDecoration(
-                                prefixIcon: Icon(CupertinoIcons.search),
-                                label: Text('Search tasks...'))),
+                        child: Builder(builder: (context) {
+                          return TextField(
+                              onChanged: (value) {
+                                context
+                                    .read<TaskListBloc>()
+                                    .add(TaskListSearch(value));
+                              },
+                              controller: controller,
+                              decoration: const InputDecoration(
+                                  prefixIcon: Icon(CupertinoIcons.search),
+                                  label: Text('Search tasks...')));
+                        }),
                       )
                     ],
                   ),
@@ -118,28 +120,26 @@ class HomeScreen extends StatelessWidget {
               ),
               Expanded(
                 child: Consumer<Repository<TaskData>>(
-                  builder: (context, value, child) {
-                    context.read<TaskListBloc>().add(TaskListStarted());
-                    return BlocBuilder<TaskListBloc, TaskListState>(
-                      builder: (context, state) {
-                        if (state is TaskListSuccess) {
-                          return TaskList(
-                              items: state.items, themeData: themeData);
-                        } else if (state is TaskListEmpty) {
-                          return const EmptyState();
-                        } else if (state is TaskListLoading ||
-                            state is TaskListInitial) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        } else if (state is TaskListError) {
-                          return Center(child: Text(state.errorMessage));
-                        } else {
-                          throw Exception('state is not valid.');
-                        }
-                      },
-                    );
-                  },
-                ),
+                    builder: (context, value, child) {
+                  context.read<TaskListBloc>().add(TaskListStarted());
+                  return BlocBuilder<TaskListBloc, TaskListState>(
+                    builder: (context, state) {
+                      if (state is TaskListSuccess) {
+                        return TaskList(
+                            items: state.items, themeData: themeData);
+                      } else if (state is TaskListEmpty) {
+                        return const EmptyState();
+                      } else if (state is TaskListLoading ||
+                          state is TaskListInitial) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state is TaskListError) {
+                        return Center(child: Text(state.errorMessage));
+                      } else {
+                        throw Exception('state is not valid.');
+                      }
+                    },
+                  );
+                }),
               ),
             ],
           ),
