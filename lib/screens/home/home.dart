@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:todo/data/data.dart';
 import 'package:todo/data/repo/repository.dart';
 import 'package:todo/main.dart';
+import 'package:todo/screens/edit/cubit/edit_task_cubit.dart';
 import 'package:todo/screens/edit/edit.dart';
 import 'package:todo/screens/home/bloc/task_list_bloc.dart';
 import 'package:todo/widgets.dart';
@@ -26,8 +27,10 @@ class HomeScreen extends StatelessWidget {
         child: InkWell(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => EditTaskScreen(
-                task: TaskData(),
+              builder: (context) => BlocProvider<EditTaskCubit>(
+                create: (context) => EditTaskCubit(
+                    TaskData(), context.read<Repository<TaskData>>()),
+                child: const EditTaskScreen(),
               ),
             ));
           },
@@ -246,7 +249,11 @@ class _TaskItemState extends State<TaskItem> {
     return InkWell(
       onTap: (() {
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => EditTaskScreen(task: widget.task)));
+            builder: (context) => BlocProvider<EditTaskCubit>(
+                  create: (context) => EditTaskCubit(
+                      widget.task, context.read<Repository<TaskData>>()),
+                  child: const EditTaskScreen(),
+                )));
       }),
       onLongPress: () {
         widget.task.delete();

@@ -1,23 +1,29 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:todo/data/data.dart';
 import 'package:todo/data/repo/repository.dart';
 import 'package:todo/main.dart';
+import 'package:todo/screens/edit/cubit/edit_task_cubit.dart';
 
 class EditTaskScreen extends StatefulWidget {
-  final TaskData task;
-
-  const EditTaskScreen({super.key, required this.task});
+  const EditTaskScreen({super.key});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
 
 class _EditTaskScreenState extends State<EditTaskScreen> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.task.name);
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    _controller = TextEditingController(
+        text: context.read<EditTaskCubit>().state.task.name);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +38,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             color: primaryColor, borderRadius: BorderRadius.circular(4)),
         child: InkWell(
           onTap: () {
-            widget.task.name = _controller.text;
-            widget.task.priority = widget.task.priority;
-            final repository =
-                Provider.of<Repository<TaskData>>(context, listen: false);
-
-            repository.createOrUpdate(widget.task);
+            context.read<EditTaskCubit>().onSaveChangesClick();
 
             Navigator.of(context).pop();
           },
@@ -77,51 +78,59 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Flex(
-              direction: Axis.horizontal,
-              children: [
-                Flexible(
-                    flex: 1,
-                    child: PriorityRadioButton(
-                      label: 'High',
-                      color: Colors.red,
-                      isSelected: widget.task.priority == Priority.high,
-                      ontap: () {
-                        setState(() {
-                          widget.task.priority = Priority.high;
-                        });
-                      },
-                    )),
-                const SizedBox(width: 8),
-                Flexible(
-                    flex: 1,
-                    child: PriorityRadioButton(
-                      label: 'Normal',
-                      color: Colors.orange,
-                      isSelected: widget.task.priority == Priority.normal,
-                      ontap: () {
-                        setState(() {
-                          widget.task.priority = Priority.normal;
-                        });
-                      },
-                    )),
-                const SizedBox(width: 8),
-                Flexible(
-                    flex: 1,
-                    child: PriorityRadioButton(
-                      label: 'Low',
-                      color: Colors.cyan,
-                      isSelected: widget.task.priority == Priority.low,
-                      ontap: () {
-                        setState(() {
-                          widget.task.priority = Priority.low;
-                        });
-                      },
-                    )),
-              ],
+            BlocBuilder<EditTaskCubit, EditTaskState>(
+              builder: (context, state) {
+                final priority = state.task.priority;
+                return Flex(
+                  direction: Axis.horizontal,
+                  children: [
+                    Flexible(
+                        flex: 1,
+                        child: PriorityRadioButton(
+                          label: 'High',
+                          color: Colors.red,
+                          isSelected: priority == Priority.high,
+                          ontap: () {
+                            context
+                                .read<EditTaskCubit>()
+                                .onPriorityChnaged(Priority.high);
+                          },
+                        )),
+                    const SizedBox(width: 8),
+                    Flexible(
+                        flex: 1,
+                        child: PriorityRadioButton(
+                          label: 'Normal',
+                          color: Colors.orange,
+                          isSelected: priority == Priority.normal,
+                          ontap: () {
+                            context
+                                .read<EditTaskCubit>()
+                                .onPriorityChnaged(Priority.normal);
+                          },
+                        )),
+                    const SizedBox(width: 8),
+                    Flexible(
+                        flex: 1,
+                        child: PriorityRadioButton(
+                          label: 'Low',
+                          color: Colors.cyan,
+                          isSelected: priority == Priority.low,
+                          ontap: () {
+                            context
+                                .read<EditTaskCubit>()
+                                .onPriorityChnaged(Priority.low);
+                          },
+                        )),
+                  ],
+                );
+              },
             ),
             TextField(
               controller: _controller,
+              onChanged: (value) {
+                context.read<EditTaskCubit>().onTextChanged(value);
+              },
               decoration: InputDecoration(
                 label: Text('Add a task for today...',
                     style: Theme.of(context)

@@ -1,6 +1,16 @@
 part of 'edit_task_cubit.dart';
 
 @immutable
-sealed class EditTaskState {}
+abstract class EditTaskState {
+  final TaskData task;
 
-final class EditTaskInitial extends EditTaskState {}
+  const EditTaskState({required this.task});
+}
+
+class EditTaskInitial extends EditTaskState {
+  const EditTaskInitial({required super.task});
+}
+
+class EditTaskPriorityChanged extends EditTaskState {
+  const EditTaskPriorityChanged({required super.task});
+}
